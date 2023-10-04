@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Federico Zuccardi Merli
+ * Copyright (c) 2023 Raspberry Pi (Trading) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,33 @@
  *
  */
 
-#include <stdint.h>
-#include "pico.h"
-#include "pico/unique_id.h"
-#include "get_serial.h"
+#ifndef BOARD_DEBUGPROBE_H_
+#define BOARD_DEBUGPROBE_H_
 
-/* C string for iSerialNumber in USB Device Descriptor, two chars per byte + terminating NUL */
-char usb_serial[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
+#define PROBE_IO_SWDI
+#define PROBE_CDC_UART
+// No reset pin 
 
-/* Why a uint8_t[8] array inside a struct instead of an uint64_t an inquiring mind might wonder */
-static pico_unique_board_id_t uID;
+// PIO config
+#define PROBE_SM 0
+#define PROBE_PIN_OFFSET 12
+#define PROBE_PIN_SWCLK (PROBE_PIN_OFFSET + 0)
+// For level-shifted input.
+#define PROBE_PIN_SWDI (PROBE_PIN_OFFSET + 1)
+#define PROBE_PIN_SWDIO (PROBE_PIN_OFFSET + 2)
 
-void usb_serial_init(void)
-{
-    pico_get_unique_board_id(&uID);
+// UART config
+#define PICOPROBE_UART_TX 4
+#define PICOPROBE_UART_RX 5
+#define PICOPROBE_UART_INTERFACE uart1
+#define PICOPROBE_UART_BAUDRATE 115200
 
-    for (int i = 0; i < PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2; i++)
-    {
-        /* Byte index inside the uid array */
-        int bi = i / 2;
-        /* Use high nibble first to keep memory order (just cosmetics) */
-        uint8_t nibble = (uID.id[bi] >> 4) & 0x0F;
-        uID.id[bi] <<= 4;
-        /* Binary to hex digit */
-        usb_serial[i] = nibble < 10 ? nibble + '0' : nibble + 'A' - 10;
-    }
-}
+#define PICOPROBE_USB_CONNECTED_LED 2
+#define PICOPROBE_DAP_CONNECTED_LED 15
+#define PICOPROBE_DAP_RUNNING_LED 16
+#define PICOPROBE_UART_RX_LED 7
+#define PICOPROBE_UART_TX_LED 8
+
+#define PROBE_PRODUCT_STRING "Debug Probe (CMSIS-DAP)"
+
+#endif
